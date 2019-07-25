@@ -1,14 +1,18 @@
+-> intro
+== intro ==
 My package is missing!
-* You look around to see if you can find any clues
+* You look around to see if you can find any clues.
 - I don't notice anything out of the ordinary. I hope I didn't drop it on my way here...
-Look's like there's a few shops in this small little street. I should ask some people there if they may have seen it.
+Looks like there's a few shops in this small little street. I should ask some people there if they may have seen it.
 -> shop_choices
+
+
 == shop_choices ==
 Which store should I go inside?
 + (in_apple) [Apple Store]
     You walk in {in_apple > 1: once again}.
     There's a nice young man at the desk, and they're wearing a blue shirt with the old logo on it. How retro.
-    "Hello welcom to Apple store buy an iPad pls"
+    {not asked_apple: "Hello welcom to Apple store buy an iPad pls" | "Hmmm, sorry kid, I still haven't seen any sort of package of yours around here" -> shop_choices}
     You look at the iPads. This one seems to have the newest CPU... better battery life... and an even higher refresh rate for the display... Hmmm
     + + [Leave]
         You leave the Apple store.
@@ -22,12 +26,18 @@ Which store should I go inside?
         I was trying to find out what happened to the package!
         "Uhhh hey do you need help or something?"
         They must have noticed the sudden worry on my face.
-        * * * [Package]
+        + + + (asked_apple) [Package]
             "A package? What are you a delivery kid or somethin'?"
-        * * * [iPad]
+            "Hmm..."
+            "Haven't seen anything like that, but if you happen to drop on by again, and something comes up, I'll be sure to tell ya"
+        + + + [iPad]
+            "So basically it's the new model. Standard edition comes with 16 petabytes, more than enough for light use."
     - - ->shop_choices
-        sfd
-+ Go home
++ [Sushi/Ramen/Food bar or weeb shit like that]
+    This place smells very good.
+    Like momma's cookin
+- ->shop_choices
++ [Go home]
     Oh well. You snooze you lose. Seems like you can't find your package. You just gotta take the L.
     YOU GO HOME
     YOU LOST THE PACKAGE
@@ -36,3 +46,7 @@ Which store should I go inside?
     HOMELESS ENDING
     -> END
 -> shop_choices
+
+== gang_hideout ==
+
+-> END
