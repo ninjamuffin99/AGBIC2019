@@ -28,7 +28,7 @@ Which store should I go inside?
     - - ->shop_choices
         sfd
 + Go home
-    Oh well you snooze you lose, seems like you can't find your package. Sometimes you just gotta take the L.
+    Oh well. You snooze you lose. Seems like you can't find your package. You just gotta take the L.
     YOU GO HOME
     YOU LOST THE PACKAGE
     YOU LOST YOUR JOB
