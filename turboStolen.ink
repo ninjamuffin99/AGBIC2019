@@ -1,3 +1,9 @@
+VAR uber_eats = "Uber Eats"
+VAR postmates = "Postmates"
+VAR claw_crew = "Claw Crew"
+VAR teeth_gang = "Teeth Gang"
+
+-> gang_hideout
 -> intro
 == intro ==
 My package is missing!
@@ -36,7 +42,9 @@ Which store should I go inside?
 + [Sushi/Ramen/Food bar or weeb shit like that]
     This place smells very good.
     Like momma's cookin
-- ->shop_choices
+    This place seems
+    Woah, you found a secret hideout. It's the {claw_crew}.
+    -> gang_hideout
 + [Go home]
     Oh well. You snooze you lose. Seems like you can't find your package. You just gotta take the L.
     YOU GO HOME
@@ -48,5 +56,11 @@ Which store should I go inside?
 -> shop_choices
 
 == gang_hideout ==
-
+Alright, I just arrived at the gang hideout.
+It's rumored that {claw_crew} has business ties to {uber_eats}. Some sort of weird money laundering scheme or something like that.
+* Sneak through the hallways Snake from Metal Gear Solid 2
+- Man I love that video game
+You meet a boy
+* Hello
+- "Aw shucks jee whiz this is embarrassing."
 -> END
