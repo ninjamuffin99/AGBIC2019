@@ -42,7 +42,11 @@ Which store should I go inside?
 + [Sushi/Ramen/Food bar or weeb shit like that]
     This place smells very good.
     Like momma's cookin
-    This place seems
+    This place has a chill vibe.
+    The bartender greets you
+    "HMMM 21+ in here kid, sorry"
+    * [Explain]
+    - "Looking for a package huh?"
     Woah, you found a secret hideout. It's the {claw_crew}.
     -> gang_hideout
 + [Go home]
