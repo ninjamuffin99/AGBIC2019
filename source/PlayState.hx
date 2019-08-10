@@ -38,6 +38,8 @@ class PlayState extends FlxState
 	private var prefix:String = "fulp";
 	
 	private var bg:FlxSprite;
+
+	private var choicesOffsets:Float = 18;
 	
 	override public function create():Void
 	{
@@ -60,14 +62,9 @@ class PlayState extends FlxState
 		trace(inkStory.canContinue);
 		trace(inkStory.path.componentsString);
 		trace(inkStory.currentText);
-
-		var dumShitText:FlxTypeText = new FlxTypeText(10, 10, 0, inkStory.currentText);
-		dumShitText.start(0.1, true, false);
-		add(dumShitText);
 		
-		autoText = new TypeTextTwo(10, 160, FlxG.width - 20, inkStory.currentText);
+		autoText = new TypeTextTwo(10, 160, FlxG.width - 20, inkStory.currentText, 24);
 		autoText.setTypingVariation(0.3);
-		autoText.delay = 0.03;
 		autoText.start(0.03, true, false);
 		add(autoText);
 		
@@ -110,7 +107,7 @@ class PlayState extends FlxState
 				{
 					var choice:Choice = inkStory.currentChoices[i];
 					
-					var choiceTxt:FlxText = new FlxText(183, (13 * i) + 28, 0, choice.text);
+					var choiceTxt:FlxText = new FlxText(183, (choicesOffsets * i) + 28, 0, choice.text, Std.int(choicesOffsets - 2));
 					grpChoices.add(choiceTxt);
 					
 					if (FlxG.onMobile)
@@ -166,7 +163,7 @@ class PlayState extends FlxState
 			if (curSelected >= inkStory.currentChoices.length)
 				curSelected = 0;
 			
-			highLight.y = (13 * curSelected) + 28;
+			highLight.y = (choicesOffsets * curSelected) + 28;
 			
 			
 		}

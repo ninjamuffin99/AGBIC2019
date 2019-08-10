@@ -3,11 +3,10 @@ VAR postmates = "Postmates"
 VAR claw_crew = "Claw Crew"
 VAR teeth_gang = "Teeth Gang"
 
--> gang_hideout
 -> intro
 == intro ==
 My package is missing!
-* You look around to see if you can find any clues.
+* [You look around to see if you can find any clues.]
 - I don't notice anything out of the ordinary. I hope I didn't drop it on my way here...
 Looks like there's a few shops in this small little street. I should ask some people there if they may have seen it.
 -> shop_choices
@@ -45,8 +44,8 @@ Which store should I go inside?
     This place has a chill vibe.
     The bartender greets you
     "HMMM 21+ in here kid, sorry"
-    * [Explain]
-    - "Looking for a package huh?"
+    * * [Explain]
+    - - "Looking for a package huh?"
     Woah, you found a secret hideout. It's the {claw_crew}.
     -> gang_hideout
 + [Go home]
@@ -62,9 +61,9 @@ Which store should I go inside?
 == gang_hideout ==
 Alright, I just arrived at the gang hideout.
 It's rumored that {claw_crew} has business ties to {uber_eats}. Some sort of weird money laundering scheme or something like that.
-* Sneak through the hallways Snake from Metal Gear Solid 2
+* [Sneak through the hallways Snake from Metal Gear Solid 2]
 - Man I love that video game
 You meet a boy
-* Hello
+* [Hello]
 - "Aw shucks jee whiz this is embarrassing."
 -> END
