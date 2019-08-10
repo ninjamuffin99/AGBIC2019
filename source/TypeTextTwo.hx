@@ -72,7 +72,7 @@ class TypeTextTwo extends FlxTypeText
 		//addFormat(format1, 8, 15);
 		
 	}
-
+	
 	override function insertBreakLines() 
 	{
 		super.insertBreakLines();
@@ -80,6 +80,7 @@ class TypeTextTwo extends FlxTypeText
 		//trace(_finalText);
 		// sets intended text
 		_intendedText = _finalText;
+		/* 
 		// applies markup
 		applyMarkup(_intendedText, markUpShit);
 		// when it applies the markup, it also sets the text to the full string for like a frame
@@ -94,8 +95,9 @@ class TypeTextTwo extends FlxTypeText
 		
 		//sets intended text again so that the auto type stuff can finish properly
 		_intendedText = _finalText;
-		
+		 */
 		//trace(_finalText);
+
 	}
 	
 	override public function update(elapsed:Float):Void 
@@ -106,7 +108,6 @@ class TypeTextTwo extends FlxTypeText
 			isFinished = true;
 		else
 			isFinished = false;
-		
 		
 		if (!paused)
 		{
@@ -127,8 +128,13 @@ class TypeTextTwo extends FlxTypeText
 						
 					});
 			}
-			
-			
 		}
+		
+	}
+
+	override public function skip():Void
+	{
+		super.skip();
+		//isFinished = true;
 	}
 }

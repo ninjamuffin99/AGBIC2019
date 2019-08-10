@@ -14,8 +14,8 @@ class Main extends MainTemplate
 	override function init() 
 	{
 		ZOOM = -1;
-		RENDER_WIDTH = 256;
-		RENDER_HEIGHT = 239;
+		RENDER_WIDTH = 960;
+		RENDER_HEIGHT = 540;
 		INITIAL_STATE = PlayState;
 		FPS = 60;
 
@@ -29,12 +29,13 @@ class Main extends MainTemplate
 	{
 		FLS.extendedClass = Reg;
 		super();
-	}//---------------------------------------------------;
-	// --
+	}
+
+	
 	public static function main():Void
 	{	
 		Lib.current.addChild(new Main());
-	}//---------------------------------------------------;
+	}
 	
 	
 	
