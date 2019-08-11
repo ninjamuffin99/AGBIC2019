@@ -14,8 +14,8 @@ class Main extends MainTemplate
 	override function init() 
 	{
 		ZOOM = -1;
-		RENDER_WIDTH = 960;
-		RENDER_HEIGHT = 540;
+		RENDER_WIDTH = 1920;
+		RENDER_HEIGHT = 1080;
 		INITIAL_STATE = PlayState;
 		FPS = 60;
 

@@ -5,6 +5,10 @@ VAR teeth_gang = "Teeth Gang"
 
 -> intro
 == intro ==
+Another beautiful day outside
+fulpsetbg bg
+fulpactor girl 0 100
+fulpfadein
 My package is missing!
 * [You look around to see if you can find any clues.]
 - I don't notice anything out of the ordinary. I hope I didn't drop it on my way here...
@@ -17,15 +21,15 @@ Which store should I go inside?
 + (in_apple) [Apple Store]
     You walk in {in_apple > 1: once again}.
     There's a nice young man at the desk, and they're wearing a blue shirt with the old logo on it. How retro.
+    fulpactor boomer 1000 0
     {not asked_apple: "Hello welcom to Apple store buy an iPad pls" | "Hmmm, sorry kid, I still haven't seen any sort of package of yours around here" -> shop_choices}
     You look at the iPads. This one seems to have the newest CPU... better battery life... and an even higher refresh rate for the display... Hmmm
     + + [Leave]
         You leave the Apple store.
+        fulphide boomer
         -> shop_choices
     + + [Stay]
-        These electronics are a bit pricey, and out of my budget. Too bad they don't have anything more affordable
-        for the everygirl like myself. Although they were once a status symbol in culture, they fell out of style
-        after the company lacked their past innovation and vision.
+        These electronics are a bit pricey, and out of my budget. Too bad they don't have anything more affordable for the everygirl like myself. Although they were once a status symbol in culture, they fell out of style after the company lacked their past innovation and vision.
         Nowadays they have came back in style as there's been a wave of 2000s-2010s nostalgia.
         Wait a minute...
         I was trying to find out what happened to the package!

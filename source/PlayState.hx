@@ -33,29 +33,33 @@ class PlayState extends FlxState
 	private var highLight:FlxSprite;
 	private var curSelected:Int = 0;
 	private var grpChoices:FlxTypedGroup<FlxText>;
+	private var grpChoiceBGs:FlxTypedGroup<FlxSprite>;
+	private var grpActors:FlxTypedGroup<Actor>;
 	private var boxFade:BoxFader;
-	private var WINDOWSIZE:FlxPoint = new FlxPoint(168, 112);
+	private var WINDOWSIZE:FlxPoint = new FlxPoint(1920, 1080);
 	private var prefix:String = "fulp";
 	
 	private var bg:FlxSprite;
 
-	private var choicesOffsets:Float = 18;
+	private var choicesOffsets:Float = 36;
+	private var choiceMultiplier:Float = 1.5;
 	
 	override public function create():Void
 	{
 		P = FLS.JSON.playstate;
 		
-		bg = new FlxSprite(-50, 39).makeGraphic(10, 10);
-		bg.setGraphicSize(0, 112);
-		bg.updateHitbox();
+		bg = new FlxSprite(0, 0).makeGraphic(1, 1, FlxColor.TRANSPARENT);
 		add(bg);
 		
 		//var overlay:FlxSprite = new FlxSprite().loadGraphic(AssetPaths.placeholderBG__png);
 		//add(overlay);
+
+		grpActors = new FlxTypedGroup<Actor>();
+		add(grpActors);
 		
-		boxFade = new BoxFader(4, 39, WINDOWSIZE.x, WINDOWSIZE.y);
+		boxFade = new BoxFader(0, 0, WINDOWSIZE.x, WINDOWSIZE.y);
 		boxFade.setColor(FlxColor.BLACK);
-		//add(boxFade);
+		add(boxFade);
 		
 		inkStory = new FlxStory(AssetPaths.daStory__json);
 		inkStory.Continue();
@@ -63,9 +67,14 @@ class PlayState extends FlxState
 		trace(inkStory.path.componentsString);
 		trace(inkStory.currentText);
 		
-		autoText = new TypeTextTwo(10, 160, FlxG.width - 20, inkStory.currentText, 24);
+		autoText = new TypeTextTwo(20, FlxG.height * 0.65, FlxG.width - 20, inkStory.currentText, 24);
 		autoText.setTypingVariation(0.3);
 		autoText.start(0.03, true, false);
+		
+		var blackBG:FlxSprite = new FlxSprite(autoText.x - 10, autoText.y - 10).makeGraphic(FlxG.width - 20, Std.int(FlxG.height * 0.32), FlxColor.BLACK);
+		blackBG.alpha = 0.6;
+		add(blackBG);
+
 		add(autoText);
 		
 		continueCursor = new FlxSprite(0, 0).makeGraphic(10, 10);
@@ -79,6 +88,9 @@ class PlayState extends FlxState
 		
 		FlxTween.tween(highLight, {alpha: 0.9}, 0.18, {type:FlxTweenType.PINGPONG, ease:FlxEase.quadInOut, loopDelay:0.05});
 		
+		grpChoiceBGs = new FlxTypedGroup<FlxSprite>();
+		add(grpChoiceBGs);
+
 		grpChoices = new FlxTypedGroup<FlxText>();
 		add(grpChoices);
 		
@@ -95,6 +107,7 @@ class PlayState extends FlxState
 
 		var justSelected:Bool = false;
 		grpChoices.forEach(function(txt:FlxText){grpChoices.remove(txt, true); });
+		grpChoiceBGs.forEach(function(bg:FlxSprite){grpChoiceBGs.remove(bg, true); });
 		
 		
 		if (inkStory.currentChoices.length > 0)
@@ -107,8 +120,14 @@ class PlayState extends FlxState
 				{
 					var choice:Choice = inkStory.currentChoices[i];
 					
-					var choiceTxt:FlxText = new FlxText(183, (choicesOffsets * i) + 28, 0, choice.text, Std.int(choicesOffsets - 2));
+					var choiceTxt:FlxText = new FlxText(183, (choicesOffsets * (i * choiceMultiplier)) + choicesOffsets, 0, choice.text, Std.int(choicesOffsets - 2));
+					var choiceBG:FlxSprite = new FlxSprite(choiceTxt.x, choiceTxt.y - 2).makeGraphic(Std.int(choiceTxt.fieldWidth), choiceTxt.size + 4, FlxColor.BLACK);
+					choiceBG.alpha = 0.6;
+					choiceBG.screenCenter(X);
+					grpChoiceBGs.add(choiceBG);
+					
 					grpChoices.add(choiceTxt);
+					choiceTxt.screenCenter(X);
 					
 					if (FlxG.onMobile)
 					{
@@ -163,7 +182,7 @@ class PlayState extends FlxState
 			if (curSelected >= inkStory.currentChoices.length)
 				curSelected = 0;
 			
-			highLight.y = (choicesOffsets * curSelected) + 28;
+			highLight.y = (choicesOffsets * curSelected * choiceMultiplier) + choicesOffsets;
 			
 			
 		}
@@ -239,6 +258,27 @@ class PlayState extends FlxState
 			}
 		}
 	}
+
+	private function actorCheck(ifTrue:Actor->Void, ifFalse:Void->Void):Void
+	{
+		var actorFound:Bool = false;
+		grpActors.forEach(function(act:Actor)
+		{
+			if (curArg == act.name)
+			{
+				ifTrue(act);
+				actorFound = true;
+			}
+		});
+
+		if (!actorFound)
+		{
+			ifFalse();
+		}
+
+	}
+
+	private var curArg:String = "";
 	
 	private function fulpCheck():Void
 	{
@@ -250,7 +290,11 @@ class PlayState extends FlxState
 			var args:Array<String> = message.substr(prefix.length).split(" ");
 			var command = args.shift().toLowerCase().trim();
 			FlxG.log.add(command);
+			trace(args);
 			var tmr:Float = 0;
+
+			if (args[0] != null)
+				curArg = args[0].toLowerCase();
 			
 			switch (command) 
 			{
@@ -258,7 +302,7 @@ class PlayState extends FlxState
 					FlxG.log.add(args.slice(0).join(" ").trim());
 				case "fadein":
 					boxFade.setColor(FlxColor.BLACK);
-					boxFade.fadeOff();
+					boxFade.fadeOff(null, {steps: 6, time: 1});
 					FlxG.log.add("fading in");
 				case "fadeout":
 					boxFade.fadeColor(FlxColor.BLACK);
@@ -266,8 +310,35 @@ class PlayState extends FlxState
 					FlxG.log.add("Fading out");
 				case "setbg":
 					bg.loadGraphic("assets/images/bgs/" + args[0].trim() + ".png");
-					bg.setGraphicSize(0, 112);
+					bg.setGraphicSize(0, FlxG.height);
 					bg.updateHitbox();
+				case "hide":
+					actorCheck(function(act:Actor){act.visible = false;}, function(){});
+
+				case "actor":
+					actorCheck(function(act:Actor)
+						{
+							act.visible = true;
+							if (args[1] != null)
+								act.x = Std.parseFloat(args[1]);
+							if (args[2] != null)
+								act.y = Std.parseFloat(args[2]);
+						},
+						function()
+						{
+							var curX:Float = 0;
+							var curY:Float = 0;
+
+							if (args[1] != null)
+								curX = Std.parseFloat(args[1]);
+							if (args[2] != null)
+								curY = Std.parseFloat(args[2]);
+
+							var newActor:Actor = new Actor(curX, curY);
+							newActor.loadGraphic("assets/images/actors/" + args[0].trim() + ".png");
+							newActor.name = args[0].toLowerCase();
+							grpActors.add(newActor);
+						});
 				default:
 					FlxG.log.add("Busted command somewhere....");
 					
