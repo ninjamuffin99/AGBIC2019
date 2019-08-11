@@ -294,7 +294,7 @@ class PlayState extends FlxState
 			var tmr:Float = 0;
 
 			if (args[0] != null)
-				curArg = args[0].toLowerCase();
+				curArg = args[0].toLowerCase().trim();
 			
 			switch (command) 
 			{
@@ -313,8 +313,11 @@ class PlayState extends FlxState
 					bg.setGraphicSize(0, FlxG.height);
 					bg.updateHitbox();
 				case "hide":
-					actorCheck(function(act:Actor){act.visible = false;}, function(){});
-
+					actorCheck(function(act:Actor)
+					{
+						act.visible = false;
+						trace("TRIED TO HIDE: " + act.name);
+					}, function(){FlxG.log.warn("COULD NOT FIND ACTOR WITH NAME: " + curArg);});
 				case "actor":
 					actorCheck(function(act:Actor)
 						{
@@ -336,7 +339,7 @@ class PlayState extends FlxState
 
 							var newActor:Actor = new Actor(curX, curY);
 							newActor.loadGraphic("assets/images/actors/" + args[0].trim() + ".png");
-							newActor.name = args[0].toLowerCase();
+							newActor.name = args[0].toLowerCase().trim();
 							grpActors.add(newActor);
 						});
 				default:

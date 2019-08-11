@@ -24,6 +24,7 @@ Which store should I go inside?
     fulpactor boomer 1000 0
     {not asked_apple: "Hello welcom to Apple store buy an iPad pls" | "Hmmm, sorry kid, I still haven't seen any sort of package of yours around here" -> shop_choices}
     You look at the iPads. This one seems to have the newest CPU... better battery life... and an even higher refresh rate for the display... Hmmm
+    fulphide boomer
     + + [Leave]
         You leave the Apple store.
         fulphide boomer
