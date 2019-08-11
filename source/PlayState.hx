@@ -259,30 +259,7 @@ class PlayState extends FlxState
 		}
 	}
 
-	private function actorCheck(ifTrue:Actor->Void):Void
-	{
-		var actorFound:Bool = false;
-		grpActors.forEach(function(act:Actor)
-		{
-			if (curArg == act.name)
-			{
-				ifTrue(act);
-				actorFound = true;
-			}
-		});
-
-		if (!actorFound)
-		{
-			var newActor:Actor = new Actor();
-			newActor.loadGraphic("assets/images/actors/" + curArg + ".png");
-			newActor.name = curArg;
-			grpActors.add(newActor);
-
-			ifTrue(newActor);
-		}
-
-	}
-
+	// COMMAND SHIT
 	private var curArg:String = "";
 	
 	private function fulpCheck():Void
@@ -321,17 +298,44 @@ class PlayState extends FlxState
 					actorCheck(function(act:Actor)
 					{
 						act.visible = false;
+						changeActorPos(act, args[1], args[2]);
 						trace("TRIED TO HIDE: " + act.name);
 					});
 				case "actor":
 					actorCheck(function(act:Actor)
 					{
 						act.visible = true;
-						if (args[1] != null)
-							act.x = Std.parseFloat(args[1]);
-						if (args[2] != null)
-							act.y = Std.parseFloat(args[2]);
+						if (act.tweenMoves)
+						{
+							var curX:Float = act.x;
+							var curY:Float = act.y;
+							if (args[1] != null)
+								curX = Std.parseFloat(args[1]);
+							if (args[2] != null)
+								curY = Std.parseFloat(args[2]);
+							FlxTween.tween(act, {x: curX, y:curY}, 1.6, {ease:FlxEase.elasticInOut});
+						}
+						else
+						{
+							changeActorPos(act, args[1], args[2]);
+						}
+						
 					});
+				case "tweenon":
+					actorCheck(function(act:Actor)
+					{
+						act.tweenMoves = true;
+						changeActorPos(act, args[1], args[2]);
+						
+					});
+				case "tweenoff":
+					actorCheck(function(act:Actor)
+					{
+						act.tweenMoves = false;
+					});
+				case "wait":
+					if (args[0] != null)
+						tmr = Std.parseFloat(args[0]);
 				default:
 					FlxG.log.add("Busted command somewhere....");
 					
@@ -348,5 +352,39 @@ class PlayState extends FlxState
 				}
 			});
 		}
+	}
+
+	private function changeActorPos(act:Actor, ?X:String, ?Y:String):Void
+	{
+		if (X != null)
+			act.x = Std.parseFloat(X);
+		if (Y != null)
+			act.y = Std.parseFloat(Y);
+
+	}
+
+	private function actorCheck(ifTrue:Actor->Void):Void
+	{
+		var actorFound:Bool = false;
+		grpActors.forEach(function(act:Actor)
+		{
+			if (curArg == act.name)
+			{
+				ifTrue(act);
+				actorFound = true;
+			}
+		});
+
+		if (!actorFound)
+		{
+			var newActor:Actor = new Actor();
+			newActor.loadGraphic("assets/images/actors/" + curArg + ".png");
+			newActor.name = curArg;
+			newActor.visible = false;
+			grpActors.add(newActor);
+
+			ifTrue(newActor);
+		}
+
 	}
 }
