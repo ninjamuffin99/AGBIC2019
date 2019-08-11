@@ -259,7 +259,7 @@ class PlayState extends FlxState
 		}
 	}
 
-	private function actorCheck(ifTrue:Actor->Void, ifFalse:Void->Void):Void
+	private function actorCheck(ifTrue:Actor->Void):Void
 	{
 		var actorFound:Bool = false;
 		grpActors.forEach(function(act:Actor)
@@ -273,7 +273,12 @@ class PlayState extends FlxState
 
 		if (!actorFound)
 		{
-			ifFalse();
+			var newActor:Actor = new Actor();
+			newActor.loadGraphic("assets/images/actors/" + curArg + ".png");
+			newActor.name = curArg;
+			grpActors.add(newActor);
+
+			ifTrue(newActor);
 		}
 
 	}
@@ -317,31 +322,16 @@ class PlayState extends FlxState
 					{
 						act.visible = false;
 						trace("TRIED TO HIDE: " + act.name);
-					}, function(){FlxG.log.warn("COULD NOT FIND ACTOR WITH NAME: " + curArg);});
+					});
 				case "actor":
 					actorCheck(function(act:Actor)
-						{
-							act.visible = true;
-							if (args[1] != null)
-								act.x = Std.parseFloat(args[1]);
-							if (args[2] != null)
-								act.y = Std.parseFloat(args[2]);
-						},
-						function()
-						{
-							var curX:Float = 0;
-							var curY:Float = 0;
-
-							if (args[1] != null)
-								curX = Std.parseFloat(args[1]);
-							if (args[2] != null)
-								curY = Std.parseFloat(args[2]);
-
-							var newActor:Actor = new Actor(curX, curY);
-							newActor.loadGraphic("assets/images/actors/" + args[0].trim() + ".png");
-							newActor.name = args[0].toLowerCase().trim();
-							grpActors.add(newActor);
-						});
+					{
+						act.visible = true;
+						if (args[1] != null)
+							act.x = Std.parseFloat(args[1]);
+						if (args[2] != null)
+							act.y = Std.parseFloat(args[2]);
+					});
 				default:
 					FlxG.log.add("Busted command somewhere....");
 					
