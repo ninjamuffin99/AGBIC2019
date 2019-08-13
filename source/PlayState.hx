@@ -105,6 +105,10 @@ class PlayState extends FlxState
 		FlxG.watch.addQuick("Is Finished", autoText.isFinished);
 		FlxG.watch.addQuick("Is Paused", autoText.paused);
 
+		//DEBUG THIS SHIT FOR VOICE ACTING???
+		if (FlxG.keys.justPressed.Y && inkStory.canContinue)
+			trace(inkStory.state.currentPath);
+
 		var justSelected:Bool = false;
 		grpChoices.forEach(function(txt:FlxText){grpChoices.remove(txt, true); });
 		grpChoiceBGs.forEach(function(bg:FlxSprite){grpChoiceBGs.remove(bg, true); });
