@@ -18,6 +18,7 @@ Looks like there's a few shops in this small little street. I should ask some pe
 
 == shop_choices ==
 Which store should I go inside?
+It really is a mystery. Lemme think about it. {->shop_choices| Alright}
 + (in_apple) [Apple Store]
     You walk in {in_apple > 1: once again}.
     There's a nice young man at the desk, and they're wearing a blue shirt with the old logo on it. How retro.

@@ -46,6 +46,7 @@ class PlayState extends FlxState
 	
 	override public function create():Void
 	{
+		FlxG.save.bind("File");
 		P = FLS.JSON.playstate;
 		
 		bg = new FlxSprite(0, 0).makeGraphic(1, 1, FlxColor.TRANSPARENT);
@@ -99,6 +100,14 @@ class PlayState extends FlxState
 	override public function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
+
+		if (FlxG.keys.justPressed.I)
+			save();
+		if (FlxG.keys.justPressed.K)
+			load();
+
+		if (FlxG.keys.justPressed.O)
+			FlxG.switchState(new ink.ScriptViewer());
 		
 		FlxG.watch.addQuick("story can continue", inkStory.canContinue);
 		FlxG.watch.addQuick("Text length: ", autoText.text.length);
@@ -106,8 +115,13 @@ class PlayState extends FlxState
 		FlxG.watch.addQuick("Is Paused", autoText.paused);
 
 		//DEBUG THIS SHIT FOR VOICE ACTING???
+		/* 
 		if (FlxG.keys.justPressed.Y && inkStory.canContinue)
 			trace(inkStory.state.currentPath);
+ 		*/
+
+		if (FlxG.keys.justPressed.Y && inkStory.canContinue)
+			trace(inkStory.state.storySeed);
 
 		var justSelected:Bool = false;
 		grpChoices.forEach(function(txt:FlxText){grpChoices.remove(txt, true); });
@@ -390,5 +404,17 @@ class PlayState extends FlxState
 			ifTrue(newActor);
 		}
 
+	}
+
+	public function save():Void
+	{
+		FlxG.save.data.story = inkStory.state.ToJson();
+		
+		FlxG.save.flush();
+	}
+
+	public function load():Void
+	{
+		inkStory.state.LoadJson(FlxG.save.data.story);
 	}
 }
