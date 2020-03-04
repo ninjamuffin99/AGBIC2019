@@ -21,6 +21,11 @@ import haxe.Json;
 import ink.FlxStory;
 import ink.runtime.Choice;
 import openfl.Assets;
+import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.addons.editors.pex.FlxPexParser;
+import flixel.effects.particles.FlxEmitter;
+import flixel.system.FlxSound;
+import io.newgrounds.NG;
 using flixel.util.FlxStringUtil;
 using StringTools;
 
@@ -33,6 +38,7 @@ class PlayState extends FlxState
 	private var highLight:FlxSprite;
 	private var curSelected:Int = 0;
 	private var grpChoices:FlxTypedGroup<FlxText>;
+	private var grpChoicesBuffer:FlxTypedGroup<FlxText>;
 	private var grpChoiceBGs:FlxTypedGroup<FlxSprite>;
 	private var grpActors:FlxTypedGroup<Actor>;
 	private var boxFade:BoxFader;
@@ -43,15 +49,32 @@ class PlayState extends FlxState
 
 	private var choicesOffsets:Float = 36;
 	private var choiceMultiplier:Float = 1.5;
+
+	private var curName:FlxText;
+
+	private var blackBG:FlxSprite;
+	private var initBlackY:Float = 0; // gets set later
+
+	private var dialogueClean:String = "";
+
+	private var choiceStroke:FlxTextFormat = new FlxTextFormat(FlxColor.RED, null, null, FlxColor.BLACK);
+
+	private var emitter:FlxEmitter;
+	private var isSpoken:Bool = false;
 	
 	override public function create():Void
 	{
 		FlxG.save.bind("File");
 		P = FLS.JSON.playstate;
+		persistentDraw = false;
+		persistentUpdate = false;
 		
 		bg = new FlxSprite(0, 0).makeGraphic(1, 1, FlxColor.TRANSPARENT);
 		add(bg);
-		
+
+		#if !debug
+		var ng:NGio = new NGio(APIStuff.APIKEY, APIStuff.ENCKEY);
+		#end
 		//var overlay:FlxSprite = new FlxSprite().loadGraphic(AssetPaths.placeholderBG__png);
 		//add(overlay);
 
@@ -67,44 +90,97 @@ class PlayState extends FlxState
 		trace(inkStory.canContinue);
 		trace(inkStory.path.componentsString);
 		trace(inkStory.currentText);
+
+		var textboxTexture = FlxAtlasFrames.fromSpriteSheetPacker(AssetPaths.dialogueBox__png, AssetPaths.dialogueBox__txt);
+
+		var textY:Float = FlxG.height * 0.74;
 		
-		autoText = new TypeTextTwo(20, FlxG.height * 0.65, FlxG.width - 20, inkStory.currentText, 24);
-		autoText.setTypingVariation(0.3);
-		autoText.start(0.03, true, false);
-		
-		var blackBG:FlxSprite = new FlxSprite(autoText.x - 10, autoText.y - 10).makeGraphic(FlxG.width - 20, Std.int(FlxG.height * 0.32), FlxColor.BLACK);
-		blackBG.alpha = 0.6;
+		blackBG = new FlxSprite(5, textY - 60);
+		blackBG.frames = textboxTexture;
+		blackBG.setGraphicSize(Std.int(FlxG.width - 30));
+		blackBG.updateHitbox();
+		blackBG.alpha = 0.99;
+		blackBG.animation.add("noname", [0]);
+		blackBG.animation.add("name", [1]);
+		blackBG.animation.play("name");
+		initBlackY = blackBG.y;
 		add(blackBG);
 
-		add(autoText);
+		emitter = new FlxEmitter(0, FlxG.height);
+		FlxPexParser.parse(AssetPaths.particle__pex, AssetPaths.texture__png, emitter, 1);
+		emitter.start(false, 0.2);
+		//add(emitter);
+
+		var fakeBold = new FlxTextFormat(FlxColor.BLACK, false, false, FlxColor.BLACK);
+		var textFormat = new FlxTextFormat(FlxColor.WHITE, false, false, FlxColor.WHITE);
+
+		curName = new FlxText(60, blackBG.y - 20, 190, "Test", 44);
+		curName.autoSize = false;
+		curName.alignment = CENTER;
+		curName.font = AssetPaths.TurretRoad_Bold__ttf;
+		curName.setBorderStyle(OUTLINE, FlxColor.BLACK, 0.5);
+		curName.addFormat(fakeBold);
+		add(curName);
+
+		setBox();
 		
-		continueCursor = new FlxSprite(0, 0).makeGraphic(10, 10);
-		Align.screen(continueCursor, "center", "bottom", 13);
+		autoText = new TypeTextTwo(30, textY - 10, Std.int(blackBG.width - 40), dialogueClean, 36);
+		autoText.font = AssetPaths.TurretRoad_Regular__ttf;
+		// autoText.setBorderStyle(OUTLINE, FlxColor.WHITE, 0.3);
+		autoText.addFormat(textFormat);
+		autoText.setTypingVariation(0.3);
+		autoText.start(0.03, true, false);
+		add(autoText);
+
+		var shit = ["a", "asharp", "b", "c", "csharp", "f", "fsharp", "g", "gsharp"];
+		var goodArray:Array<FlxSound> = [];
+		for (i in 0...shit.length)
+		{
+			
+			goodArray.push(FlxG.sound.load('assets/sounds/' + shit[i] + ".mp3", 1));
+		}
+
+		autoText.sounds = goodArray;
+		autoText.finishSounds = true;
+		
+		
+		continueCursor = new FlxSprite(0, 0).loadGraphic(AssetPaths.blinkie__png);
+		continueCursor.setGraphicSize(Std.int(continueCursor.width * 0.2));
+		continueCursor.updateHitbox();
+		Align.screen(continueCursor, "center", "bottom", 20);
 		add(continueCursor);
 		
-		highLight = new FlxSprite(181);
+		highLight = new FlxSprite();
+		
 		highLight.alpha = 0.5;
-		highLight.makeGraphic(Std.int(66), Std.int(13), FlxColor.BLUE);
+		highLight.makeGraphic(Std.int(FlxG.width * 0.7), Std.int(40), FlxColor.RED);
+		highLight.screenCenter(X);
 		add(highLight);
 		
-		FlxTween.tween(highLight, {alpha: 0.9}, 0.18, {type:FlxTweenType.PINGPONG, ease:FlxEase.quadInOut, loopDelay:0.05});
+		FlxTween.tween(highLight, {alpha: 0.7}, 0.28, {type:FlxTweenType.PINGPONG, ease:FlxEase.quadInOut, loopDelay:0.05});
 		
 		grpChoiceBGs = new FlxTypedGroup<FlxSprite>();
 		add(grpChoiceBGs);
 
 		grpChoices = new FlxTypedGroup<FlxText>();
 		add(grpChoices);
+
+		grpChoicesBuffer = new FlxTypedGroup<FlxText>();
+		add(grpChoicesBuffer);
 		
 		super.create();
 	}
 	override public function update(elapsed:Float):Void
 	{
-		super.update(elapsed);
+		FlxG.watch.addMouse();
 
 		if (FlxG.keys.justPressed.I)
 			save();
 		if (FlxG.keys.justPressed.K)
 			load();
+		
+		if (FlxG.keys.justPressed.ENTER)
+			openSubState(new SubstatePause());
 
 		if (FlxG.keys.justPressed.O)
 			FlxG.switchState(new ink.ScriptViewer());
@@ -124,52 +200,87 @@ class PlayState extends FlxState
 			trace(inkStory.state.storySeed);
 
 		var justSelected:Bool = false;
-		grpChoices.forEach(function(txt:FlxText){grpChoices.remove(txt, true); });
+
+		FlxG.watch.addQuick("Choices: ", grpChoices.length);
+		FlxG.watch.addQuick("Buffer:  ", grpChoicesBuffer.length);
+		
 		grpChoiceBGs.forEach(function(bg:FlxSprite){grpChoiceBGs.remove(bg, true); });
 		
 		
 		if (inkStory.currentChoices.length > 0)
 		{
+			if (curSelected < 0)
+				curSelected = inkStory.currentChoices.length - 1;
+			if (curSelected >= inkStory.currentChoices.length)
+				curSelected = 0;
+
 			if (autoText.isFinished)
 			{
 				highLight.visible = true;
 				
-				for (i in 0...inkStory.currentChoices.length)
+				if (grpChoices.length == 0)
 				{
-					var choice:Choice = inkStory.currentChoices[i];
-					
-					var choiceTxt:FlxText = new FlxText(183, (choicesOffsets * (i * choiceMultiplier)) + choicesOffsets, 0, choice.text, Std.int(choicesOffsets - 2));
-					var choiceBG:FlxSprite = new FlxSprite(choiceTxt.x, choiceTxt.y - 2).makeGraphic(Std.int(choiceTxt.fieldWidth), choiceTxt.size + 4, FlxColor.BLACK);
-					choiceBG.alpha = 0.6;
-					choiceBG.screenCenter(X);
-					grpChoiceBGs.add(choiceBG);
-					
-					grpChoices.add(choiceTxt);
-					choiceTxt.screenCenter(X);
-					
-					if (FlxG.onMobile)
+					for (i in 0...inkStory.currentChoices.length)
 					{
-						for (touch in FlxG.touches.list)
-						{
-							if (touch.overlaps(choiceTxt) && touch.justPressed)
-							{
-								if (curSelected == i)
-								{
-									inkStory.ChooseChoiceIndex(curSelected);
-									inkStory.Continue();
-									autoText.resetText(inkStory.currentText);
-									autoText.start(null, true);
-									
-									justSelected = true;
-								}
-								else
-									curSelected = i;
-							}
-						}
+						var choice:Choice = inkStory.currentChoices[i];
 						
+						var choiceTxt:FlxText = new FlxText(0, (choicesOffsets * (i * choiceMultiplier)) + choicesOffsets, 0, choice.text, Std.int(choicesOffsets - 2));
+						choiceTxt.font = AssetPaths.impact__ttf;
+						choiceTxt.alpha = 0;
+						choiceTxt.y -= 10;
+						choiceTxt.ID = i;
+						choiceTxt.setBorderStyle(OUTLINE, FlxColor.BLACK, 1);
+						choiceTxt.addFormat(choiceStroke);
+						FlxTween.tween(choiceTxt, {alpha: 1}, 0.4, {ease:FlxEase.quadOut, startDelay: 0.15 * i});
+						FlxTween.tween(choiceTxt, {y: choiceTxt.y + 10}, 0.4, {ease: FlxEase.quartOut, startDelay: 0.15 * i});
+						
+						// var choiceBG:FlxSprite = new FlxSprite(choiceTxt.x, choiceTxt.y - 2).makeGraphic(Std.int(choiceTxt.fieldWidth), choiceTxt.size + 4, FlxColor.BLACK);
+						// choiceBG.alpha = 0;
+						// choiceBG.screenCenter(X);
+						// grpChoiceBGs.add(choiceBG);
+
+						grpChoices.add(choiceTxt);
+						choiceTxt.screenCenter(X);
 						
 					}
 				}
+				else
+				{
+					 
+					grpChoices.forEach(function(choiceTxt:FlxText)
+					{
+						if (FlxG.onMobile)
+						{
+							for (touch in FlxG.touches.list)
+							{
+								if (touch.overlaps(choiceTxt) && touch.justPressed)
+								{
+									if (curSelected == choiceTxt.ID)
+									{
+										inkStory.ChooseChoiceIndex(curSelected);
+										inkStory.Continue();
+										setBox();
+										autoText.resetText(dialogueClean);
+										autoText.start(null, true);
+										
+										justSelected = true;
+										FlxG.sound.play(AssetPaths.select__mp3, 0.3);
+									}
+									else
+									{
+										FlxG.sound.play(AssetPaths.gunUp__mp3);
+										curSelected = choiceTxt.ID;
+									}
+										
+								}
+							}
+							
+							
+						}
+
+					});
+				}
+				
 				
 				
 				if (FlxG.keys.justPressed.SPACE)
@@ -177,35 +288,65 @@ class PlayState extends FlxState
 					trace('tried to choose option');
 					inkStory.ChooseChoiceIndex(curSelected);
 					inkStory.Continue();
-					autoText.resetText(inkStory.currentText);
+					FlxG.sound.play(AssetPaths.select__mp3, 0.3);
+					setBox();
+					autoText.resetText(dialogueClean);
 					autoText.start(null, true);
 					
 					justSelected = true;
-				}	
+				}
 			}
 			else
 				highLight.visible = false;
 			
+			highLight.y = (choicesOffsets * curSelected * choiceMultiplier) + choicesOffsets + 3;
+
+		
 			if (CTRL.justPressed(CTRL.UP))
 			{
 				curSelected -= 1;
+				FlxG.sound.play(AssetPaths.gunUp__mp3);
 			}
 			if (CTRL.justPressed(CTRL.DOWN))
 			{
+				FlxG.sound.play(AssetPaths.gunDown__mp3);
 				curSelected += 1;
 			}
 			
-			if (curSelected < 0)
-				curSelected = inkStory.currentChoices.length - 1;
-			if (curSelected >= inkStory.currentChoices.length)
-				curSelected = 0;
-			
-			highLight.y = (choicesOffsets * curSelected * choiceMultiplier) + choicesOffsets;
-			
-			
 		}
 		else
+		{
 			highLight.visible = false;
+		}
+
+		if (justSelected)
+		{
+			trace("Deleted shit");
+			grpChoicesBuffer.forEach(function(txt:FlxText){grpChoicesBuffer.remove(txt, true);});
+			while(grpChoices.members.length > 0)
+			{
+				trace("deleted a thing");
+				grpChoicesBuffer.add(grpChoices.members[0]);
+				grpChoices.remove(grpChoices.members[0], true);
+			}
+
+			trace("just selected " + curSelected + " " + grpChoicesBuffer.length);
+			for (i in 0...grpChoicesBuffer.members.length)
+			{
+				trace('tween ' + i + " " + grpChoicesBuffer.members[i].text);
+
+				grpChoicesBuffer.members[i].alpha = 1;
+
+				var tweenLength:Float = 0.4;
+				if (grpChoicesBuffer.members[i].ID == curSelected)
+					tweenLength += 1.6;
+				
+				FlxTween.tween(grpChoicesBuffer.members[i], {alpha: 0, y: grpChoicesBuffer.members[i].y + 2}, tweenLength, {ease:FlxEase.quartOut, onComplete: function(tween:FlxTween){grpChoicesBuffer.remove(grpChoicesBuffer.members[i], true);}});
+
+			}
+		}
+		
+
 		
 		if (inkStory.canContinue && autoText.isFinished)
 		{
@@ -242,8 +383,46 @@ class PlayState extends FlxState
 		#if debug
 		//FLS.debug_keys();// F12 key reloads dynamic assets
 		#end
+
+		if (blackBG.animation.curAnim.name == "name")
+		{
+			blackBG.y = initBlackY - 26;
+			autoText.y = initBlackY + 50;
+		}
+		else
+		{
+			blackBG.y = initBlackY;
+			autoText.y = blackBG.y + 25;
+		}
+
+		super.update(elapsed);
 	}
-	
+
+	private function setBox():Void
+	{
+		dialogueClean = inkStory.currentText.trim();
+
+		if (dialogueClean.startsWith(":"))
+		{
+			isSpoken = true;
+			curName.alpha = 1;
+			blackBG.animation.play("name");
+
+			var splitName:Array<String> = dialogueClean.trim().split(":");
+			trace(splitName);
+			curName.text = splitName[1];
+
+			dialogueClean = dialogueClean.trim().substr(splitName[1].length + 2).trim();
+		}
+		else
+		{
+			isSpoken = false;
+			curName.alpha = 0;
+			blackBG.animation.play("noname");
+		}
+			
+	}
+
 	private function advText():Void
 	{
 		trace('tried to advance text');
@@ -258,14 +437,22 @@ class PlayState extends FlxState
 			if (inkStory.canContinue)
 			{
 				trace("story can continue");
+				var actualDialogue = inkStory.state.currentPath;
 				inkStory.Continue();
 				
 				fulpCheck();
 				
-				if (!inkStory.currentText.toLowerCase().startsWith(prefix))
+				if (!inkStory.currentText.trim().startsWith(prefix))
 				{
-					autoText.resetText(inkStory.currentText);
+					setBox();
+					autoText.resetText(dialogueClean);
 					autoText.start(null, true);
+					if (isSpoken)
+					{
+						FlxG.sound.play("assets/sounds/voice/" + actualDialogue + ".mp3");
+						FlxG.log.add(actualDialogue);
+					}
+						
 				}
 				
 			}
@@ -283,21 +470,29 @@ class PlayState extends FlxState
 	private function fulpCheck():Void
 	{
 		trace("FULP COMMAND");
-		var message:String = inkStory.currentText;
+		// DUNNO WHY, THIS SHIT NEEDS TO BE HERE
+		var message:String = inkStory.currentText.trim();
 		
-		if (message.toLowerCase().startsWith(prefix))
+		while (message.toLowerCase().startsWith(prefix))
 		{
 			var args:Array<String> = message.substr(prefix.length).split(" ");
 			var command = args.shift().toLowerCase().trim();
 			FlxG.log.add(command);
 			trace(args);
-			var tmr:Float = 0;
+			var tmr:Float = 0.1;
 
 			if (args[0] != null)
 				curArg = args[0].toLowerCase().trim();
 			
 			switch (command) 
 			{
+				case "unlock":
+					if (NGio.isLoggedIn)
+					{
+						var hornyMedal = NG.core.medals.get(Std.parseInt(args[0].trim()));
+						if (!hornyMedal.unlocked)
+							hornyMedal.sendUnlock();
+					}
 				case "log":
 					FlxG.log.add(args.slice(0).join(" ").trim());
 				case "fadein":
@@ -309,7 +504,8 @@ class PlayState extends FlxState
 					tmr = 1;
 					FlxG.log.add("Fading out");
 				case "setbg":
-					bg.loadGraphic("assets/images/bgs/" + args[0].trim() + ".png");
+					bg.loadGraphic("assets/images/bgs/" + args[0].trim());
+					trace("Tried to load the -" + args[0] + "- background" );
 					bg.setGraphicSize(0, FlxG.height);
 					bg.updateHitbox();
 				case "hide":
@@ -354,11 +550,21 @@ class PlayState extends FlxState
 				case "wait":
 					if (args[0] != null)
 						tmr = Std.parseFloat(args[0]);
+				case "hideall":
+					grpActors.forEach(function(act:Actor){act.visible = false;});
 				default:
 					FlxG.log.add("Busted command somewhere....");
 					
 			}
 			
+			if (inkStory.canContinue)
+			{
+				inkStory.Continue();
+			}
+			else
+				break;
+			message = inkStory.currentText.trim();
+			/* 
 			// make this better lol
 			new FlxTimer().start(tmr, function(tim:FlxTimer)
 			{
@@ -369,6 +575,7 @@ class PlayState extends FlxState
 					fulpCheck();
 				}
 			});
+			 */
 		}
 	}
 

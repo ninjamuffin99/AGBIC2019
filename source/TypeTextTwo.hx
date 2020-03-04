@@ -132,6 +132,7 @@ class TypeTextTwo extends FlxTypeText
 		
 	}
 
+
 	override public function skip():Void
 	{
 		super.skip();

@@ -15,6 +15,7 @@ class ScriptViewer extends FlxState
 
         while(inkStory.canContinue)
         {
+
             sb.add(inkStory.state.currentPath + " \t\t\t " + inkStory.Continue());
 
             if (!inkStory.canContinue && inkStory.currentChoices.length > 0)

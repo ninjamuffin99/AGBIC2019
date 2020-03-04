@@ -29,12 +29,7 @@
 
 	<set name="BUILD_DIR" value="export" />
 	<classpath name="source" />
-	<assets path="assets/images"/>
-	<assets path="assets/data"/>
-	<assets path="assets/music" include="*.mp3" if="flash" />
-	<assets path="assets/music" include="*.ogg" unless="flash" />
-	<assets path="assets/sounds" include="*.mp3" if="flash" />
-	<assets path="assets/sounds" include="*.ogg" unless="flash" />
+	<assets path="assets"/>"
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
@@ -45,6 +40,7 @@
 
 	<!--In case you want to use the ui package-->
 	<haxelib name="flixel-ui" />
+	<haxelib name="newgrounds" />
 
 	<!--In case you want to use nape with flixel-->
 	<!--<haxelib name="nape-haxe4" />-->
